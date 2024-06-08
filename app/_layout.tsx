@@ -1,37 +1,32 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useEffect } from 'react';
+import { KeyboardAvoidingView, Platform, StatusBar, Text, useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
 import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
+  const netInfo = useNetInfo();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : undefined} style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        {Platform.OS === 'ios' ? <StatusBar
+          backgroundColor={colorScheme === "light" ? "#fff" : "#fff"}
+          barStyle={colorScheme === "light" ? "dark-content" : "dark-content"}
+        /> : null}
+        
+        {netInfo.isConnected ? (
+          <>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </>
+        ) : (
+          <Text>İnternet Yok</Text>
+        )}
+      </SafeAreaProvider>
+    </KeyboardAvoidingView>
   );
 }
